@@ -19,6 +19,10 @@ class ProfilePage(tk.Frame):
         self.pin_display = tk.Entry(self, justify='center', font=('Helvetica', 20), bd=2, width=10)
         self.keypad_frame = tk.Frame(self, bg='white')
 
+        self.create_user_button = tk.Button(self.canvas, text="Create New Profile", command=lambda: self.controller.show_frame("CreateUserPage", None, None, None))
+        self.create_user_button.place(relx=0.91, rely=0.01)
+
+
         btn_texts = [str(i) for i in range(1, 10)] + ["0"]
         for i, btn_text in enumerate(btn_texts):
             btn = tk.Button(self.keypad_frame, text=btn_text, width=5, height=2, command=lambda b=btn_text: self.append_pin(b))

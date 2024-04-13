@@ -6,6 +6,8 @@ from models.Routine import Routine
 from models.Set import Set
 import random
 from datetime import datetime
+import socket 
+import threading
 
 """
     Elements I need to add still:
@@ -60,14 +62,14 @@ class ExecutionPage(tk.Frame):
 
     def setup_execution_section(self):
         tk.Label(self.config_panel, text="Start Execution", bg="#f0f0f0").place(relx=0.17, rely=0.1, anchor="n")
-        start_button = tk.Button(self.config_panel, text="Start", font=('Helvetica', 12), height=2, width=10)
+        start_button = tk.Button(self.config_panel, text="Start", font=('Helvetica', 12), height=2, width=10, command=self.send_routine)
         start_button.place(relx=0.17, rely=0.25, anchor="n")
 
     def setup_pause_section(self):
         tk.Label(self.config_panel, text="Pause Execution", bg="#f0f0f0").place(relx=0.5, rely=0.1, anchor="n")
         pause_button = tk.Button(self.config_panel, text="Pause", font=('Helvetica', 12), height=2, width=10)
         pause_button.place(relx=0.42, rely=0.25, anchor="n")
-        resume_button = tk.Button(self.config_panel, text="Resume", font=('Helvetica', 12), height=2, width=10)
+        resume_button = tk.Button(self.config_panel, text="Resume", font=('Helvetica', 12), height=2, width=10, command=self.pause_routine)
         resume_button.place(relx=0.58, rely=0.25, anchor="n")
 
     def setup_stop_section(self):
@@ -103,4 +105,107 @@ class ExecutionPage(tk.Frame):
             self.routine = None
 
     def set_free_use(self, free_use):
-        self.free_use = free_use
+        self.free_use = free_use 
+
+    def send_routine(self):
+        set = self.routine.sets[0]
+        num_reps, rpm, pauseTime, armDirection = len(set.reps), int(set.reps[0].opTorque), int(set.repPauseTime), str(set.reps[0].armDirection)
+
+        if rpm < 100:
+            rpm = '0' + str(rpm)
+        else:
+            rpm = str(rpm)
+
+        
+        if pauseTime < 10:
+            pauseTime = '0' + str(pauseTime)
+        else:
+            pauseTime = str(pauseTime)
+
+        
+        if num_reps < 10:
+            num_reps = '0' + str(num_reps)
+        else:
+            num_reps = str(num_reps)
+
+        if armDirection == 'CW':
+            armDirection = '0'
+        else:
+            armDirection = '1'
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_address = ('192.168.0.10', 8888)
+        #sock.bind(server_address)
+
+        try:
+            message = rpm + ',' + armDirection + ',' + pauseTime + ',' + num_reps
+            print(f"Sending: {message}")
+            sock.sendto(message.encode(), server_address)
+
+            print("Waiting to receive...")
+            data, server = sock.recvfrom(24)
+            print(f"Recieved: {data.decode()}")
+
+        finally:
+            #data, server = sock.recvfrom(24)
+            #self.title_label.text = str(data)
+            sock.close()
+
+    def pause_routine(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_address = ('192.168.0.10', 8888)
+
+        try:
+            message = "PAUSE"
+            print(f"Sending: {message}")
+            sock.sendto(message.encode(), server_address)
+
+            print("Waiting to receive...")
+            data, server = sock.recvfrom(24)
+            print(f"Received: {data.decode()}")
+        finally:
+            print("Closing socket")
+            sock.close()
+
+
+
+    def stop_routine(self):
+        
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_address = ('192.168.0.10', 8888)
+        try:
+            message = "STOP"
+            print(f"Sending: {message}")
+            sock.sendto(message.encode(), server_address)
+
+            print("Waiting to receive: ")
+            data, server = sock.recvfrom(24)
+            print(f"Received: {data.decode()}")
+
+            # Messages will come in the format (peakTorque, timetoStop, initTorqueTime, repNum)
+
+            for i in range(0, len(self.routine.sets[0].reps)):
+                data, server = sock.recvfrom(24)
+                message = data.split(',')
+                self.routine.sets[0].reps[i].peakTorque = message[0]
+                self.routine.sets[0].reps[i].timeToStop = message[1]
+                self.routine.sets[0].reps[i].initTorqueTime = message[2]
+                self.routine.sets[0].reps[i].repNum = message[3]            
+
+
+
+        finally:
+            sock.close()
+            self.controller.show_frame("OutputPage", self.batter, self.routine, None)
+
+
+
+
+
+
+            
+
+
+        
+
+

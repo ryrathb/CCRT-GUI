@@ -7,6 +7,7 @@ from HomePage import HomePage
 from OutputPage import OutputPage
 from ProfilePage import ProfilePage
 from StaticPage import StaticPage
+from CreateUserPage import CreateUserPage
 
 class MainApplication(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -34,7 +35,7 @@ class MainApplication(tk.Tk):
         container.grid_rowconfigure(0, weight=1)  # Configure the container
         container.grid_columnconfigure(0, weight=1)
 
-        for F in (StaticPage, ProfilePage, DataPage, HomePage, StartPage, OutputPage, ExecutionPage, DynamicPage):
+        for F in (StaticPage, ProfilePage, CreateUserPage, DataPage, HomePage, StartPage, OutputPage, ExecutionPage, DynamicPage):
             frame = F(container, self)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")

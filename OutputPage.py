@@ -22,9 +22,20 @@ class OutputPage(tk.Frame):
         self.config_panel = tk.Canvas(self, bg="#f0f0f0", highlightthickness=0)
         self.config_panel.place(relx=0.5, rely=0.5, anchor="center", width=600, height=300)
 
+        # Subsections for Repetition Data
+        self.repetition_labels = []
+        for i in range(16):  # Create 16 subsections
+            row = i // 4  # There are 4 rows
+            column = i % 4  # There are 4 columns
+            text = f"Repetition Number: X\nPeak Torque: X\nTime to Stop: X\nInitial Torque Applied Time: X"
+            label = tk.Label(self.config_panel, text=text, bg="#f0f0f0", justify=tk.LEFT, anchor="w", font=('Helvetica', 8))
+            label.place(x=10 + column * 140, y=10 + row * 70, width=130, height=65)
+            self.repetition_labels.append(label)
+
         # Return to HomePage Button
         self.return_home_button = tk.Button(self, text="Return Home", command=lambda: self.controller.show_frame("HomePage", self.batter, None, None))
         self.return_home_button.place(relx=0.95, rely=0.01, anchor="ne")
+
 
     def on_canvas_resize(self, event):
         width, height = event.width, event.height
