@@ -9,23 +9,6 @@ from datetime import datetime
 import socket 
 import threading
 
-"""
-    Elements I need to add still:
-        - While the routine object will be packed and sent to the clearcore
-        to perform motor actions, there needs to be some function in which 
-        a while loop is running and grabbing data from the controller. This 
-        will pull it all into a routine object and send it to the output page 
-        to be displayed. 
-        - I need to figure out if I want to send the routine data to the controller 
-        right on page switch, or if I should wait for the start button to be pressed
-        - Pause and Resume implementation. This needs to align with the while loop running,
-        so that if the user wants to resume execution, the data will be preserved
-        - I need to find a place to store the data. Maybe I'll create a large text file or something 
-        that will hold all of the necessary data. Need to figure that out this week.
-
-"""
-
-
 class ExecutionPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -67,9 +50,9 @@ class ExecutionPage(tk.Frame):
 
     def setup_pause_section(self):
         tk.Label(self.config_panel, text="Pause Execution", bg="#f0f0f0").place(relx=0.5, rely=0.1, anchor="n")
-        pause_button = tk.Button(self.config_panel, text="Pause", font=('Helvetica', 12), height=2, width=10)
+        pause_button = tk.Button(self.config_panel, text="Pause", font=('Helvetica', 12), height=2, width=10, command=self.pause_routine)
         pause_button.place(relx=0.42, rely=0.25, anchor="n")
-        resume_button = tk.Button(self.config_panel, text="Resume", font=('Helvetica', 12), height=2, width=10, command=self.pause_routine)
+        resume_button = tk.Button(self.config_panel, text="Resume", font=('Helvetica', 12), height=2, width=10, command=self.resume_routine)
         resume_button.place(relx=0.58, rely=0.25, anchor="n")
 
     def setup_stop_section(self):
@@ -146,6 +129,8 @@ class ExecutionPage(tk.Frame):
             data, server = sock.recvfrom(24)
             print(f"Recieved: {data.decode()}")
 
+            sock.sendto("0".encode(), server_address)
+
         finally:
             #data, server = sock.recvfrom(24)
             #self.title_label.text = str(data)
@@ -167,7 +152,21 @@ class ExecutionPage(tk.Frame):
             print("Closing socket")
             sock.close()
 
+    def resume_routine(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_address = ('192.168.0.10', 8888)
 
+        try:
+            message = "RESUME"
+            print(f"Sending: {message}")
+            sock.sendto(message.encode(), server_address)
+
+            print("Waiting to receive...")
+            data, server = sock.recvfrom(24)
+            print(f"Received: {data.decode()}")
+        finally:
+            print("Closing socket")
+            sock.close()
 
     def stop_routine(self):
         
