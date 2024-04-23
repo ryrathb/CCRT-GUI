@@ -21,6 +21,9 @@ class HomePage(tk.Frame):
         self.logout_button = tk.Button(self.canvas, text="Logout", command=self.logout)
         self.logout_button.place(x=20, y=20)
 
+        self.data_page_button = tk.Button(self.canvas, text="View Past Data", command=lambda: self.controller.show_frame("DataPage", self.batter, None, None))
+        self.data_page_button.place(relx=0.92, y=20)
+
         # Middle panel
         self.panel = tk.Canvas(self.canvas, bg="#f0f0f0", highlightthickness=0, borderwidth=2, relief="groove")
 
