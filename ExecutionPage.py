@@ -8,6 +8,7 @@ import random
 from datetime import datetime
 import socket 
 import threading
+import time
 
 class ExecutionPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -57,7 +58,7 @@ class ExecutionPage(tk.Frame):
 
     def setup_stop_section(self):
         tk.Label(self.config_panel, text="Stop Execution", bg="#f0f0f0").place(relx=0.83, rely=0.1, anchor="n")
-        stop_button = tk.Button(self.config_panel, text="Stop", font=('Helvetica', 12), height=2, width=10, command=lambda: self.controller.show_frame("OutputPage", self.batter, self.routine, None))
+        stop_button = tk.Button(self.config_panel, text="Stop", font=('Helvetica', 12), height=2, width=10, command=self.stop_routine)
         stop_button.place(relx=0.83, rely=0.25, anchor="n")
 
     def on_canvas_resize(self, event):
@@ -129,7 +130,7 @@ class ExecutionPage(tk.Frame):
             data, server = sock.recvfrom(24)
             print(f"Recieved: {data.decode()}")
 
-            sock.sendto("0".encode(), server_address)
+            #sock.sendto("0".encode(), server_address)
 
         finally:
             #data, server = sock.recvfrom(24)
@@ -173,16 +174,31 @@ class ExecutionPage(tk.Frame):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server_address = ('192.168.0.10', 8888)
         try:
-            message = "STOP"
+            message = "1"
             print(f"Sending: {message}")
             sock.sendto(message.encode(), server_address)
 
-            print("Waiting to receive: ")
-            data, server = sock.recvfrom(24)
-            print(f"Received: {data.decode()}")
+          
+            data = "nothing"
+            data_array = []
+
+            
+            
+            while(data != "DONE"):
+                    data, server = sock.recvfrom(24) 
+                    data_array.append(str(data.decode()))
+                    data = str(data.decode()).strip('\n')
+                    print(data)
+
+            
+            print(len(data_array))
+            
+            
+
+
 
             # Messages will come in the format (peakTorque, timetoStop, initTorqueTime, repNum)
-
+            """
             for i in range(0, len(self.routine.sets[0].reps)):
                 data, server = sock.recvfrom(24)
                 message = data.split(',')
@@ -191,7 +207,7 @@ class ExecutionPage(tk.Frame):
                 self.routine.sets[0].reps[i].initTorqueTime = message[2]
                 self.routine.sets[0].reps[i].repNum = message[3]            
 
-
+            """
 
         finally:
             sock.close()

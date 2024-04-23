@@ -1,5 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
+from models.Batter import Batter
+from models import seeds
+import random
+import random as rnd
 
 class CreateUserPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -38,8 +42,14 @@ class CreateUserPage(tk.Frame):
     def validate_and_create_user(self):
         # Error checking for user inputs
         fname, lname, pin, height, weight = (entry.get().strip() for entry in self.entries)
-        # Include validation logic here
-        # Placeholder for further processing
+        fname = str(fname[0]).upper() + str(fname[1:])
+        lname = str(lname[0]).upper() + str(lname[1:])
+        id = rnd.randint(1000000000, 9999999999)
+        newBatter = Batter(id, fname, lname, pin, height, weight)
+        seeds.add_batter(batter=newBatter)
+
+        self.controller.show_frame("HomePage", newBatter, None, None)
+
 
     def on_canvas_resize(self, event):
         self.canvas.delete("all")

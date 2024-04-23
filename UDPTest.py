@@ -1,28 +1,33 @@
-import socket
 
-def udp_client(microcontroller_ip, microcontroller_port):
-    # Create a UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+speed_difference_dict = {'10': [], '20': [], '30': [], '40': [], '50': [], '60': []}
 
-    # Server address and port
-    server_address = (microcontroller_ip, microcontroller_port)
+def find_init_torque_time(commandedRPM, tempArray, sampleRate):
+    init_torque_time = []
+    for i in range(0, len(tempArray)):
+        for j in range(0, len(tempArray[i])):
+            if tempArray[i][j] < (commandedRPM - 1):
+                init_torque_time.append(j * sampleRate)
+                break
+        
+    return init_torque_time 
 
-    try:
-        # Send data
-        message = '001,1,01,01'
-        print(f"Sending: {message}")
-        sent = sock.sendto(message.encode(), server_address)
+def find_time_to_stop(tempArray, sampleRate):
+    time_to_stop = []
+    for i in range(0, tempArray):
+        for j in range(0, tempArray[i]):
+            if tempArray[i][j] < 0.5:
+                time_to_stop.append(j * sampleRate)
 
-        # Receive response
-        print("Waiting to receive...")
-        data, server = sock.recvfrom(24)
-        print(f"Received: {data.decode()}")
+    return time_to_stop 
 
-    finally:
-        print("Closing socket")
-        sock.close()
+def find_peak_torque(tempArray, speed_difference_dict, sampleRate, commandedRPM):
+    peak_torque = [0, 0]
 
-    
+    for i in range(0, tempArray):
+        for j in range(0, tempArray[i]):
+            observed_difference = tempArray[i][j+1] - tempArray[i][j]
+            if abs(observed_difference - speed_difference_dict[commandedRPM][j]) > peak_torque[i]:
+                peak_torque[i] = j * sampleRate 
 
-# Replace '192.168.1.XXX' with the microcontroller's IP address and adjust the port
-udp_client('192.168.0.10', 8888)
+    return peak_torque
+        

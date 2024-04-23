@@ -58,11 +58,10 @@ class ProfilePage(tk.Frame):
             self.pin_display.insert(0, self.pin)
 
     def check_pin(self):
-        # Check PIN validity
-        if int(self.pin) in seeds.batterpins:
+        if str(self.pin) in seeds.batterpins:
             userBatter = None
             for batter in seeds.batters:
-                if int(self.pin) == batter.PIN:
+                if int(self.pin) == int(batter.PIN):
                     userBatter = batter
             self.controller.show_frame("HomePage", userBatter, None, None)
         else:

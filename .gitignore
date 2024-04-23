@@ -1,0 +1,5 @@
+# Ignore everything in the userData directory
+userData/*
+
+# But keep the directory itself by not ignoring .gitkeep
+!userData/.gitkeep

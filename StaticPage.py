@@ -66,7 +66,7 @@ class StaticPage(tk.Frame):
 
     def setup_torque_section(self):
         tk.Label(self.config_panel, text="Arm Speed (RPM)", bg="#f0f0f0").place(relx=0.125, rely=0.1, anchor="n")
-        torque_values = [str(i) for i in range(0, 101, 5)]
+        torque_values = [str(i) for i in range(0, 141, 10)]
         self.torque_dropdown = ttk.Combobox(self.config_panel, values=torque_values, state="readonly")
         self.torque_dropdown.place(relx=0.125, rely=0.2, anchor="n")
 
