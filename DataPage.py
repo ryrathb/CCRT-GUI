@@ -11,9 +11,9 @@ class DataPage(tk.Frame):
         self.canvas = tk.Canvas(self, bg="white")
         self.canvas.pack(fill="both", expand=True)
         self.canvas.bind("<Configure>", self.on_canvas_resize)
-        
+
         self.init_widgets()
-    
+
     def init_widgets(self):
         # Large Title
         self.title_label = tk.Label(self, text="View Past Executions", font=('Helvetica', 20, 'bold'), bg="white")
@@ -33,7 +33,8 @@ class DataPage(tk.Frame):
 
         # Initial population of data panels
         self.data_widgets = []
-        self.populate_data_panels()
+        self.back_button = tk.Button(self, text="Back", command=lambda: self.controller.show_frame("HomePage", self.batter, None, None))
+       # self.populate_data_panels()
 
     def populate_data_panels(self):
         for i in range(17):  # Assuming 17 data objects
@@ -78,4 +79,3 @@ class DataPage(tk.Frame):
 
     def set_batter(self, batter):
         self.batter = batter
-    
