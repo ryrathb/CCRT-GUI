@@ -42,34 +42,19 @@ batterpins = [batter.PIN for batter in batters]
 
 
 def add_batter(batter):
-    path = f"./{str(batter.firstName).lower() + str(batter.lastName).lower()}/"
-
+    path = f"./userData/{str(batter.firstName).lower() + str(batter.lastName).lower()}/"
     if os.path.exists(path) == False:
         try:
-            os.makedirs(path, exist_ok=True)
+            os.mkdir(path)
             print(f"Directory {path} created")
         except FileExistsError:
             print(f"Directory {path} already exists")   
 
-    batters.append(batter) 
+    batters.append(batter)
 
-    rep_file_path = os.path.join(path, f"{str(batter.firstName).lower() + str(batter.lastName).lower()}rep.txt")
-    set_file_path = os.path.join(path, f"{str(batter.firstName).lower() + str(batter.lastName).lower()}set.txt")
-    routine_file_path = os.path.join(path, f"{str(batter.firstName).lower() + str(batter.lastName).lower()}routine.txt")
-
-    text_file_path = f"./{str(batter.firstName).lower() + str(batter.lastName).lower()}/{str(batter.firstName).lower() + str(batter.lastName).lower()}.txt"
+    text_file_path = f"./userData/{str(batter.firstName).lower() + str(batter.lastName).lower()}/{str(batter.firstName).lower() + str(batter.lastName).lower()}.txt"
     with open(text_file_path, "w") as file:
-        file.write(f"{batter.ID},{batter.firstName},{batter.lastName},{batter.PIN},{batter.height},{batter.weight}") 
-
-    with open(rep_file_path, "w") as file:
-        pass 
-
-    with open(set_file_path, "w") as file:
-        pass 
-
-    with open(routine_file_path, "w") as file:
-        pass
-
+        file.write(f"{batter.ID},{batter.firstName},{batter.lastName},{batter.PIN},{batter.height},{batter.weight}")
 
     print("Batter file has been created and written")
 
