@@ -11,9 +11,9 @@ class DataPage(tk.Frame):
         self.canvas = tk.Canvas(self, bg="white")
         self.canvas.pack(fill="both", expand=True)
         self.canvas.bind("<Configure>", self.on_canvas_resize)
-
+        
         self.init_widgets()
-
+    
     def init_widgets(self):
         # Large Title
         self.title_label = tk.Label(self, text="View Past Executions", font=('Helvetica', 20, 'bold'), bg="white")
@@ -78,5 +78,4 @@ class DataPage(tk.Frame):
 
     def set_batter(self, batter):
         self.batter = batter
-
- 
+    
