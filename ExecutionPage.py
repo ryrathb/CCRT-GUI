@@ -123,7 +123,7 @@ class ExecutionPage(tk.Frame):
             rep_data_list.append(rep_string)
 
         
-        ''''
+        
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server_address = ('192.168.0.10', 8888)
         #sock.bind(server_address)
@@ -136,24 +136,21 @@ class ExecutionPage(tk.Frame):
             data, server = sock.recvfrom(24)
             print(f"Received: {data.decode()}")
 
-            try:
-                message = rpm + ',' + armDirection + ',' + pauseTime + ',' + num_reps
-                print(f"Sending: {message}")
-                sock.sendto(message.encode(), server_address)
 
-                print("Waiting to receive...")
-                data, server = sock.recvfrom(24)
-                print(f"Recieved: {data.decode()}")
-
-                #sock.sendto("0".encode(), server_address)
-
-            finally:
                 #data, server = sock.recvfrom(24)
                 #self.title_label.text = str(data)
-                sock.close()
-        except Exception as e:
-            print("Could not send START command. Error: ", e)
-        '''
+        finally:
+            for i in range(len(rep_data_list)):
+                print(f"Sending: {rep_data_list[i]}")
+                sock.sendto(message.encode(), server_address) 
+
+            print("Waiting to receive...")
+            data, server = sock.recvfrom(24)
+            print(f"Received: {data.decode()}")
+            
+            print("Closing socket")
+            sock.close()
+
 
     def continue_routine(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
