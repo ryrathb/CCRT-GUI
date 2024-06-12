@@ -46,19 +46,18 @@ class ExecutionPage(tk.Frame):
 
     def setup_execution_section(self):
         tk.Label(self.config_panel, text="Start Execution", bg="#f0f0f0").place(relx=0.17, rely=0.1, anchor="n")
-        start_button = tk.Button(self.config_panel, text="Start", font=('Helvetica', 12), height=2, width=10, command=self.send_routine)
+        start_button = tk.Button(self.config_panel, text="Start", font=('Helvetica', 12), height=3, width=15, command=self.send_routine)
         start_button.place(relx=0.17, rely=0.25, anchor="n")
 
     def setup_pause_section(self):
-        tk.Label(self.config_panel, text="Pause Execution", bg="#f0f0f0").place(relx=0.5, rely=0.1, anchor="n")
-        pause_button = tk.Button(self.config_panel, text="Pause", font=('Helvetica', 12), height=2, width=10, command=self.pause_routine)
-        pause_button.place(relx=0.42, rely=0.25, anchor="n")
-        resume_button = tk.Button(self.config_panel, text="Resume", font=('Helvetica', 12), height=2, width=10, command=self.resume_routine)
-        resume_button.place(relx=0.58, rely=0.25, anchor="n")
+        tk.Label(self.config_panel, text="Continue Execution", bg="#f0f0f0").place(relx=0.5, rely=0.1, anchor="n")
+        pause_button = tk.Button(self.config_panel, text="Continue", font=('Helvetica', 12), height=3, width=15, command=self.continue_routine)
+        pause_button.place(relx=0.50, rely=0.25, anchor="n")
+
 
     def setup_stop_section(self):
         tk.Label(self.config_panel, text="Stop Execution", bg="#f0f0f0").place(relx=0.83, rely=0.1, anchor="n")
-        stop_button = tk.Button(self.config_panel, text="Stop", font=('Helvetica', 12), height=2, width=10, command=self.stop_routine)
+        stop_button = tk.Button(self.config_panel, text="Stop", font=('Helvetica', 12), height=3, width=15, command=self.stop_routine)
         stop_button.place(relx=0.83, rely=0.25, anchor="n")
 
     def on_canvas_resize(self, event):
@@ -93,72 +92,75 @@ class ExecutionPage(tk.Frame):
 
     def send_routine(self):
         set = self.routine.sets[0]
-        num_reps, rpm, pauseTime, armDirection = len(set.reps), int(set.reps[0].opTorque), int(set.repPauseTime), str(set.reps[0].armDirection)
+        rep_data_list = []
+        for rep in set.reps:
+            rpm, torquePercent, pauseTime, armDirection = int(rep.opTorque), float(rep.avgTorque), int(rep.pauseTime), str(rep.armDirection)
 
-        if rpm < 100:
-            rpm = '0' + str(rpm)
-        else:
-            rpm = str(rpm)
+            if rpm < 100:
+                rpm = '0' + str(rpm)
+                if rpm < 10:
+                    rpm = '0' + str(rpm)
+            else:
+                rpm = str(rpm)
+
+            if torquePercent < 10.0:
+                torquePercent = '0' + str(torquePercent)
+            else:
+                torquePercent = str(torquePercent)
+
+            if pauseTime < 10:
+                pauseTime = '0' + str(pauseTime)
+            else:
+                pauseTime = str(pauseTime)
+
+            if armDirection == 'CW':
+                armDirection = '0'
+            else:
+                armDirection = '1'
+
+            rep_string = rpm + "," + torquePercent + "," + armDirection + "," + pauseTime
+            print(rep_string)
+            rep_data_list.append(rep_string)
 
         
-        if pauseTime < 10:
-            pauseTime = '0' + str(pauseTime)
-        else:
-            pauseTime = str(pauseTime)
-
-        
-        if num_reps < 10:
-            num_reps = '0' + str(num_reps)
-        else:
-            num_reps = str(num_reps)
-
-        if armDirection == 'CW':
-            armDirection = '0'
-        else:
-            armDirection = '1'
-
+        ''''
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server_address = ('192.168.0.10', 8888)
         #sock.bind(server_address)
-
-        try:
-            message = rpm + ',' + armDirection + ',' + pauseTime + ',' + num_reps
-            print(f"Sending: {message}")
-            sock.sendto(message.encode(), server_address)
-
-            print("Waiting to receive...")
-            data, server = sock.recvfrom(24)
-            print(f"Recieved: {data.decode()}")
-
-            #sock.sendto("0".encode(), server_address)
-
-        finally:
-            #data, server = sock.recvfrom(24)
-            #self.title_label.text = str(data)
-            sock.close()
-
-    def pause_routine(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        server_address = ('192.168.0.10', 8888)
-
-        try:
-            message = "PAUSE"
+        try:           
+            message = "START"
             print(f"Sending: {message}")
             sock.sendto(message.encode(), server_address)
 
             print("Waiting to receive...")
             data, server = sock.recvfrom(24)
             print(f"Received: {data.decode()}")
-        finally:
-            print("Closing socket")
-            sock.close()
 
-    def resume_routine(self):
+            try:
+                message = rpm + ',' + armDirection + ',' + pauseTime + ',' + num_reps
+                print(f"Sending: {message}")
+                sock.sendto(message.encode(), server_address)
+
+                print("Waiting to receive...")
+                data, server = sock.recvfrom(24)
+                print(f"Recieved: {data.decode()}")
+
+                #sock.sendto("0".encode(), server_address)
+
+            finally:
+                #data, server = sock.recvfrom(24)
+                #self.title_label.text = str(data)
+                sock.close()
+        except Exception as e:
+            print("Could not send START command. Error: ", e)
+        '''
+
+    def continue_routine(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server_address = ('192.168.0.10', 8888)
 
         try:
-            message = "RESUME"
+            message = "CONT"
             print(f"Sending: {message}")
             sock.sendto(message.encode(), server_address)
 

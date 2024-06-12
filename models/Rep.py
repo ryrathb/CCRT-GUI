@@ -1,5 +1,5 @@
 class Rep:
-    def __init__(self, name, repID, repNum, setObj, armDirection, startPos, endPos, opTorque, avgTorque, peakTorque, timeToStop, initTorqueTime):
+    def __init__(self, name, repID, repNum, setObj, armDirection, startPos, endPos, opTorque, avgTorque, peakTorque, timeToStop, initTorqueTime, peakTorqueTime, pauseTime):
         self.name = name
         self.repID = repID  # 10 digit integer
         self.repNum = repNum
@@ -12,4 +12,6 @@ class Rep:
         self.peakTorque = peakTorque  # float
         self.timeToStop = timeToStop  # float
         self.initTorqueTime = initTorqueTime  # float
+        self.peakTorqueTime = peakTorqueTime
+        self.pauseTime = pauseTime
 

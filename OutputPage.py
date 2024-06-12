@@ -53,9 +53,14 @@ class OutputPage(tk.Frame):
 
     def export_to_csv(self):
         batter_field_names = ['ID', 'First Name', 'Last Name', 'PIN', 'Height', 'Weight', 'Date']
-        rep_field_names = ['Name', 'Rep ID', 'Rep Number', 'Set', 'Arm Direction', 'Start Position', 'End Position', 'Input RPM', 'Average Torque', 'Peak Torque', 'Time to Stop', 'Initial Torque Time']
+        rep_field_names = ['Name', 'Rep ID', 'Rep Number', 'Set', 'Arm Direction', 'Start Position', 
+                           'End Position', 'Input RPM', 'Average Torque', 'Peak Torque', 'Time to Stop', 
+                           'Initial Torque Time']
 
-        rep_lists = [[rep.name, rep.repID, rep.repNum, 'Static Set', rep.armDirection, 'Center', ('Left' if rep.ArmDirection == "CCW" else 'Right'), rep.opTorque, 'N/A', rep.peakTorque, rep.timeToStop, rep.initTorqueTime] for rep in self.routine.sets[0].reps]
+        rep_lists = [[rep.name, rep.repID, rep.repNum, 'Static Set', rep.armDirection, 'Center', 
+                      ('Left' if rep.ArmDirection == "CCW" else 'Right'), 
+                      rep.opTorque, 'N/A', rep.peakTorque, rep.timeToStop, rep.initTorqueTime] 
+                      for rep in self.routine.sets[0].reps]
 
         file_path = "CCRT.csv"
         file_exists = os.path.exists(file_path)
