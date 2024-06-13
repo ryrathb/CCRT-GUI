@@ -94,19 +94,20 @@ class ExecutionPage(tk.Frame):
         set = self.routine.sets[0]
         rep_data_list = []
         for rep in set.reps:
-            rpm, torquePercent, pauseTime, armDirection = int(rep.opTorque), float(rep.avgTorque), int(rep.pauseTime), str(rep.armDirection)
+            rpm, torquePercent, pauseTime, armDirection = int(rep.opTorque), int(rep.avgTorque), int(rep.pauseTime), str(rep.armDirection)
 
             if rpm < 100:
-                rpm = '0' + str(rpm)
                 if rpm < 10:
+                    rpm = '00' + str(rpm)
+                else:
                     rpm = '0' + str(rpm)
             else:
                 rpm = str(rpm)
 
-            if torquePercent < 10.0:
-                torquePercent = '0' + str(torquePercent)
+            if torquePercent < 10:
+                torquePercent = '0' + str(torquePercent) + '.0'
             else:
-                torquePercent = str(torquePercent)
+                torquePercent = str(torquePercent) + '.0'
 
             if pauseTime < 10:
                 pauseTime = '0' + str(pauseTime)
@@ -142,12 +143,13 @@ class ExecutionPage(tk.Frame):
         finally:
             for i in range(len(rep_data_list)):
                 print(f"Sending: {rep_data_list[i]}")
+                message = str(rep_data_list[i])
                 sock.sendto(message.encode(), server_address) 
 
             print("Waiting to receive...")
             data, server = sock.recvfrom(24)
             print(f"Received: {data.decode()}")
-            
+
             print("Closing socket")
             sock.close()
 

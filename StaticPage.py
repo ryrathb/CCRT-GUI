@@ -59,9 +59,9 @@ class StaticPage(tk.Frame):
 
     def setup_rep_entries(self):
         directions = ["CW", "CCW"]
-        torque_values = [f"{i*2.5:.1f}" for i in range(13)]
+        torque_values = [str(i) for i in range(100)]
         rpm_values = [str(i) for i in range(5, 45, 5)]
-        pause_time_values = [str(i) for i in range(0, 32, 2)]
+        pause_time_values = [str(i) for i in range(0, 32, 1)]
 
         for i in range(12):
             tk.Label(self.config_panel, text=f"Rep {i+1}", bg="#f0f0f0").place(relx=0.1, rely=(i+1)/15 + 0.1, anchor="w")
@@ -106,12 +106,18 @@ class StaticPage(tk.Frame):
     def start_execution(self):
         reps = []
         for rpm_dropdown, torque_dropdown, direction_dropdown, pause_dropdown in self.reps_entries:
-            rpm = rpm_dropdown.get()
-            torque = torque_dropdown.get()
-            direction = direction_dropdown.get()
-            pause = pause_dropdown.get()
+            rpm = rpm_dropdown.get() 
+            torque = torque_dropdown.get() 
+            direction = direction_dropdown.get() 
+            pause = pause_dropdown.get() 
 
-            if rpm and torque and direction and pause:
+            if rpm or torque or direction or pause:
+                # Apply default values where necessary
+                rpm = rpm if rpm else "5"  # Default to 5 if empty
+                torque = torque if torque else "1"  # Default to 1 if empty
+                direction = direction if direction else "CCW"  # Default to CCW if empty
+                pause = pause if pause else "1"
+
                 reps.append({
                     "rpm": int(rpm),
                     "torque": float(torque),
