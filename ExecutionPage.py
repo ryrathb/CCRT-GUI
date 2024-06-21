@@ -18,6 +18,10 @@ class ExecutionPage(tk.Frame):
         self.routine = None
         self.free_use = False
 
+        self.start_button_pressed = False
+        self.cont_limit = 0
+        self.stop_hit = 0
+        
         self.canvas = tk.Canvas(self, bg="white")
         self.canvas.pack(fill="both", expand=True)
         self.canvas.bind("<Configure>", self.on_canvas_resize)
@@ -91,129 +95,138 @@ class ExecutionPage(tk.Frame):
         self.free_use = free_use 
 
     def send_routine(self):
-        set = self.routine.sets[0]
-        rep_data_list = []
-        for rep in set.reps:
-            rpm, torquePercent, pauseTime, armDirection = int(rep.opTorque), int(rep.avgTorque), int(rep.pauseTime), str(rep.armDirection)
+        if self.start_button_pressed == False:
+            self.start_button_pressed = True
+            set = self.routine.sets[0]
+            rep_data_list = []
+            for rep in set.reps:
+                rpm, torquePercent, pauseTime, armDirection = int(rep.opTorque), int(rep.avgTorque), int(rep.pauseTime), str(rep.armDirection)
 
-            if rpm < 100:
-                if rpm < 10:
-                    rpm = '00' + str(rpm)
+                if rpm < 100:
+                    if rpm < 10:
+                        rpm = '00' + str(rpm)
+                    else:
+                        rpm = '0' + str(rpm)
                 else:
-                    rpm = '0' + str(rpm)
-            else:
-                rpm = str(rpm)
+                    rpm = str(rpm)
 
-            if torquePercent < 10:
-                torquePercent = '0' + str(torquePercent) + '.0'
-            else:
-                torquePercent = str(torquePercent) + '.0'
+                if torquePercent < 10:
+                    torquePercent = '0' + str(torquePercent) + '.0'
+                else:
+                    torquePercent = str(torquePercent) + '.0'
 
-            if pauseTime < 10:
-                pauseTime = '0' + str(pauseTime)
-            else:
-                pauseTime = str(pauseTime)
+                if pauseTime < 10:
+                    pauseTime = '0' + str(pauseTime)
+                else:
+                    pauseTime = str(pauseTime)
 
-            if armDirection == 'CW':
-                armDirection = '0'
-            else:
-                armDirection = '1'
+                if armDirection == 'CW':
+                    armDirection = '0'
+                else:
+                    armDirection = '1'
 
-            rep_string = rpm + "," + torquePercent + "," + armDirection + "," + pauseTime
-            print(rep_string)
-            rep_data_list.append(rep_string)
+                rep_string = rpm + "," + torquePercent + "," + armDirection + "," + pauseTime
+                print(rep_string)
+                rep_data_list.append(rep_string)
 
-        
-        
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        server_address = ('192.168.0.10', 8888)
-        #sock.bind(server_address)
-        try:           
-            message = "START"
-            print(f"Sending: {message}")
-            sock.sendto(message.encode(), server_address)
+            
+            
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            server_address = ('192.168.0.10', 8888)
+            #sock.bind(server_address)
+            try:           
+                message = "START"
+                print(f"Sending: {message}")
+                sock.sendto(message.encode(), server_address)
 
-            print("Waiting to receive...")
-            data, server = sock.recvfrom(24)
-            print(f"Received: {data.decode()}")
+                print("Waiting to receive...")
+                data, server = sock.recvfrom(24)
+                print(f"Received: {data.decode()}")
+                
+                # Sends the handle position so the correct moment of inertia value can be selected in the microcontroller code.
+                message = str(self.routine.sets[0].repPauseTime)
+                print(f"Sending: {message}")
+                sock.sendto(message.encode(), server_address)
 
+                print("Waiting to receive...")
+                data, server = sock.recvfrom(24)
+                print(f"Received: {data.decode()}")
 
-                #data, server = sock.recvfrom(24)
-                #self.title_label.text = str(data)
-        finally:
-            for i in range(len(rep_data_list)):
-                print(f"Sending: {rep_data_list[i]}")
-                message = str(rep_data_list[i])
-                sock.sendto(message.encode(), server_address) 
+            finally:
+                for i in range(len(rep_data_list)):
+                    print(f"Sending: {rep_data_list[i]}")
+                    message = str(rep_data_list[i])
+                    sock.sendto(message.encode(), server_address) 
 
-            print("Waiting to receive...")
-            data, server = sock.recvfrom(24)
-            print(f"Received: {data.decode()}")
+                print("Waiting to receive...")
+                data, server = sock.recvfrom(24)
+                print(f"Received: {data.decode()}")
 
-            print("Closing socket")
-            sock.close()
+                print("Closing socket")
+                sock.close()
+            
 
 
     def continue_routine(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        server_address = ('192.168.0.10', 8888)
+        if self.cont_limit < len(self.routine.sets[0].reps):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            server_address = ('192.168.0.10', 8888)
 
-        try:
-            message = "CONT"
-            print(f"Sending: {message}")
-            sock.sendto(message.encode(), server_address)
+            try:
+                message = "CONT"
+                print(f"Sending: {message}")
+                sock.sendto(message.encode(), server_address)
 
-            print("Waiting to receive...")
-            data, server = sock.recvfrom(24)
-            print(f"Received: {data.decode()}")
-        finally:
-            print("Closing socket")
-            sock.close()
+                print("Waiting to receive...")
+                data, server = sock.recvfrom(24)
+                print(f"Received: {data.decode()}")
+            finally:
+                print("Closing socket")
+                sock.close()
+                self.cont_limit += 1
 
     def stop_routine(self):
         
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server_address = ('192.168.0.10', 8888)
         try:
-            message = "1"
+            
+            message = "STOP"
             print(f"Sending: {message}")
-            sock.sendto(message.encode(), server_address)
-
-          
-            data = "nothing"
-            data_array = []
-
-            
-            
-            while(data != "DONE"):
-                    data, server = sock.recvfrom(24) 
-                    data_array.append(str(data.decode()))
-                    data = str(data.decode()).strip('\n')
-                    print(data)
-
-            
-            print(len(data_array))
-            
-            
-
-
+            sock.sendto(message.encode(), server_address)       
 
             # Messages will come in the format (peakTorque, timetoStop, initTorqueTime, repNum)
-            """
+            
             for i in range(0, len(self.routine.sets[0].reps)):
                 data, server = sock.recvfrom(24)
-                message = data.split(',')
-                self.routine.sets[0].reps[i].peakTorque = message[0]
-                self.routine.sets[0].reps[i].timeToStop = message[1]
-                self.routine.sets[0].reps[i].initTorqueTime = message[2]
-                self.routine.sets[0].reps[i].repNum = message[3]            
+                stop_test = str(data.decode())
+                if (stop_test == "acknowledged") or (stop_test == "acknowledged\n"):
+                    self.stop_hit = 1
+                    break               
+                message = str(data.decode()).split(',')
+                self.routine.sets[0].reps[i].timeToStop = message[0]
+                self.routine.sets[0].reps[i].initTorqueTime = message[1]
+                self.routine.sets[0].reps[i].peakTorque = message[2]
+                self.routine.sets[0].reps[i].peakTorqueTime = message[3]      
 
-            """
+            if self.stop_hit == 0:
+                print("Waiting to receive...")
+                data, server = sock.recvfrom(24)
+                print(f"Received: {data.decode()}")    
+                
+
+            
 
         finally:
             sock.close()
-            self.controller.show_frame("OutputPage", self.batter, self.routine, None)
+            self.controller.show_frame("OutputPage", self.batter, self.routine, None)  
 
+    def set_start_button(self):
+        self.start_button_pressed = False
+
+    def set_cont_limit(self):
+        self.cont_limit = 0
+        self.stop_hit = 0
 
 
 

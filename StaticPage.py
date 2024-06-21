@@ -38,11 +38,11 @@ class StaticPage(tk.Frame):
         self.setup_rep_entries()
 
         # Disclaimer and checkbox
-        self.disclaimer_label = tk.Label(self.config_panel, text="DISCLAIMER: If you want to just swing the arm freely, \ncheck the box to the right",
+        self.disclaimer_label = tk.Label(self.config_panel, text="Choose which arm position have the handle at.",
                                          bg="#f0f0f0", wraplength=500)
         self.disclaimer_label.place(relx=0.5, rely=0.95, anchor="center")
-        self.disclaimer_check = tk.Checkbutton(self.config_panel, bg="#f0f0f0", variable=self.check_state)
-        self.disclaimer_check.place(relx=0.85, rely=0.95, anchor="center")
+        self.disclaimer_check = ttk.Combobox(self.config_panel, values=[str(i) for i in range(1, 11)], state="readonly", width=8)
+        self.disclaimer_check.place(relx=0.80, rely=0.95, anchor="center")
 
         # Back button
         self.back_button = tk.Button(self, text="Back", command=lambda: self.controller.show_frame("HomePage", self.batter, None, None))
@@ -58,10 +58,11 @@ class StaticPage(tk.Frame):
             tk.Label(self.config_panel, text=label, bg="#f0f0f0", font=('Helvetica', 12, 'bold')).place(relx=0.2 + i*0.15, rely=0.05, anchor="w")
 
     def setup_rep_entries(self):
+        self.reps_entries = []
         directions = ["CW", "CCW"]
-        torque_values = [str(i) for i in range(100)]
+        torque_values = [str(i) for i in range(2, 26)]
         rpm_values = [str(i) for i in range(5, 45, 5)]
-        pause_time_values = [str(i) for i in range(0, 32, 1)]
+        pause_time_values = [str(i) for i in range(1, 31, 1)]
 
         for i in range(12):
             tk.Label(self.config_panel, text=f"Rep {i+1}", bg="#f0f0f0").place(relx=0.1, rely=(i+1)/15 + 0.1, anchor="w")
@@ -128,9 +129,11 @@ class StaticPage(tk.Frame):
         if not reps:
             print("No reps configured")
             return
+        
+        handle_position = self.disclaimer_check.get()
 
         new_static_exec = Routine(routineID=random.randint(1000000000, 9999999999), name=("Static Execution on " + str(datetime.now().strftime("%Y-%m-%d"))), batter=self.batter, isStatic=True, setPauseTime=None)
-        static_set = Set(name="Static Set 1", setID=random.randint(1000000000, 9999999999), repPauseTime=None, routine=new_static_exec, leftBound=0, rightBound=0, isSitting=False)
+        static_set = Set(name="Static Set 1", setID=random.randint(1000000000, 9999999999), repPauseTime=(handle_position if handle_position else "5"), routine=new_static_exec, leftBound=0, rightBound=0, isSitting=False)
 
         for i, rep_config in enumerate(reps, 1):
             new_rep = Rep(

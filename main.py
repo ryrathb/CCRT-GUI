@@ -55,7 +55,11 @@ class MainApplication(tk.Tk):
             if page_name in ["ExecutionPage", "OutputPage"]:
                 if page_name == "ExecutionPage":
                     frame.set_free_use(free_use)
+                    frame.set_start_button()
+                    frame.set_cont_limit() 
                 frame.set_routine(routine)
+            if page_name == "StaticPage":
+                frame.setup_rep_entries()
             frame.set_batter(batter) 
         frame.tkraise()
 
